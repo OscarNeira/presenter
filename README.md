@@ -112,7 +112,7 @@ Two rules for hand-written SVG, both learned the hard way:
 | Key | Does |
 |---|---|
 | `→` `←` | Next / previous |
-| **S** | Speaker notes, with a timer |
+| **S** | Speaker view: notes, timer, next slide (a second window) |
 | **O** | Overview of all slides |
 | **B** | Black the screen, for discussion |
 | **⌃⌘F** | Full screen |
