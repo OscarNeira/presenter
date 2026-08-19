@@ -1,0 +1,179 @@
+/* ============================================================================
+   Deck theme.
+
+   The idea worth keeping: the typeface changes when the argument changes.
+   Serif italic  = the quoted / aspirational voice (a brief, a mock, a PRD)
+   Monospace     = the working voice (parts, owners, states, numbers)
+   Sans          = structure and statements
+
+   Every colour is a custom property in :root. Swap those for your brand and
+   the whole deck follows. No webfonts, so it renders the same offline and on
+   a borrowed laptop.
+   ========================================================================== */
+
+:root {
+  /* ---- palette (light) — replace these with your own ---- */
+  --paper:      #FFFFFF;
+  --paper-2:    #EDEEF1;
+  --ink:        #14213D;   /* headings */
+  --ink-soft:   #363A45;   /* body */
+  --steel:      #63677A;   /* labels */
+  --steel-faint:#8A8E9C;   /* >= 3:1 on paper */
+  --stroke:     #9095A3;   /* lines inside figures, >= 3:1 */
+  --rule:       #D8DAE0;   /* hairlines, tables */
+  --accent:     #2B5FD9;   /* ONE accent. Spend it sparingly. */
+  --accent-deep:#12307A;
+  --amber:      #C98A0E;   /* semantic only, never small text */
+  --green:      #1E7A5A;
+
+  /* ---- type ---- */
+  --serif: Georgia, "Times New Roman", serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --mono:  ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:#0F1420; --paper-2:#171D2C; --ink:#FFFFFF; --ink-soft:#D2D7E2;
+    --steel:#98A0B4; --steel-faint:#6E7688; --stroke:#6E7688; --rule:#28304A;
+    --accent:#6E9BFF; --accent-deep:#A8C2FF; --amber:#DFAE4A; --green:#4FBF95;
+  }
+}
+html.dark {
+  --paper:#0F1420; --paper-2:#171D2C; --ink:#FFFFFF; --ink-soft:#D2D7E2;
+  --steel:#98A0B4; --steel-faint:#6E7688; --stroke:#6E7688; --rule:#28304A;
+  --accent:#6E9BFF; --accent-deep:#A8C2FF; --amber:#DFAE4A; --green:#4FBF95;
+}
+html.light {
+  --paper:#FFFFFF; --paper-2:#EDEEF1; --ink:#14213D; --ink-soft:#363A45;
+  --steel:#63677A; --steel-faint:#8A8E9C; --stroke:#9095A3; --rule:#D8DAE0;
+  --accent:#2B5FD9; --accent-deep:#12307A; --amber:#C98A0E; --green:#1E7A5A;
+}
+
+/* ---------- ground ---------- */
+.reveal-viewport { background-color: var(--paper); background-image: none; }
+.reveal-viewport::after {
+  content: ""; position: fixed; left: 0; right: 0; bottom: 0;
+  height: 5px; background: var(--accent); z-index: 30; pointer-events: none;
+}
+
+.reveal { font-family: var(--sans); font-size: 30px; color: var(--ink); -webkit-font-smoothing: antialiased; }
+.reveal .slides { text-align: left; }
+.reveal .slides section { padding: 0; }
+
+/* ---------- headings ---------- */
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: var(--sans); color: var(--ink); margin: 0 0 .5em;
+  text-transform: none; text-wrap: balance; text-shadow: none;
+}
+.reveal h1 { font-size: 2.55em; font-weight: 800; line-height: .98; letter-spacing: -.035em; max-width: 16ch; }
+.reveal h2 { font-size: 1.72em; font-weight: 750; line-height: 1.04; letter-spacing: -.028em; max-width: 21ch; }
+.reveal h3 {
+  font-family: var(--mono); font-size: .62em; font-weight: 600; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--steel);
+  padding-bottom: .5em; border-bottom: 1px solid var(--rule); margin-bottom: .9em;
+}
+
+/* ---------- body ---------- */
+.reveal p { line-height: 1.5; margin: 0 0 .7em; max-width: 46ch; color: var(--ink-soft); }
+.reveal strong { color: var(--ink); font-weight: 700; }
+.reveal a { color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; }
+
+/* ---------- the two voices ---------- */
+.reveal blockquote {
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: 1.5em; line-height: 1.18; letter-spacing: -.012em;
+  color: var(--ink-soft); background: none; box-shadow: none; border: 0;
+  border-left: 2px solid var(--accent); padding: .1em 0 .1em .7em;
+  margin: 0 0 .6em; max-width: 22ch; width: auto; text-wrap: balance;
+}
+.reveal blockquote p { max-width: none; color: inherit; margin: 0; }
+.reveal code { font-family: var(--mono); font-size: .78em; color: var(--accent); background: none; padding: 0; }
+.reveal pre { font-size: .5em; width: 100%; box-shadow: none; border: 1px solid var(--rule); background: var(--paper-2); }
+.reveal pre code { color: var(--ink); padding: 1em; max-height: 30vh; }
+
+/* ---------- eyebrow ---------- */
+.reveal .eyebrow {
+  font-family: var(--mono); font-size: .58em; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--steel); display: flex; align-items: center; gap: .8em;
+  margin-bottom: 1.1em; max-width: none;
+}
+.reveal .eyebrow::before { content: ""; width: 2.6em; height: 1px; background: var(--accent); flex: none; }
+
+/* ---------- lists ---------- */
+.reveal ul, .reveal ol { display: block; margin: 0 0 .7em 1.1em; max-width: 40ch; }
+.reveal li { line-height: 1.45; margin-bottom: .42em; color: var(--ink-soft); }
+.reveal li strong { color: var(--ink); }
+.reveal ul li::marker { color: var(--accent); }
+.reveal ol li::marker { color: var(--accent); font-family: var(--mono); font-size: .8em; }
+
+/* ---------- tables ---------- */
+.reveal table { border-collapse: collapse; width: 100%; font-size: .62em; font-variant-numeric: tabular-nums; margin: 0 0 .6em; }
+.reveal table th {
+  font-family: var(--mono); font-size: .82em; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--steel); text-align: left;
+  padding: .55em .8em .55em 0; border-bottom: 1px solid var(--rule);
+}
+.reveal table td { padding: .62em .8em .62em 0; border-bottom: 1px solid var(--rule); color: var(--ink-soft); vertical-align: baseline; }
+.reveal table td:first-child { font-family: var(--mono); font-size: .84em; color: var(--steel-faint); white-space: nowrap; }
+.reveal table tr:last-child td { border-bottom: 0; }
+/* on a slide marked `map`, the first column is the subject, not an index */
+.reveal section.map td:first-child {
+  font-family: var(--sans); font-size: 1.05em; font-weight: 650; color: var(--ink); letter-spacing: -.01em;
+}
+
+/* ---------- status chips ---------- */
+.reveal .s-run, .reveal .s-risk, .reveal .s-none {
+  font-family: var(--mono); font-size: .82em; letter-spacing: .12em; text-transform: uppercase;
+  padding: .18em .5em; border: 1px solid currentColor; white-space: nowrap;
+}
+.reveal .s-run { color: var(--green); }
+.reveal .s-risk { color: var(--amber); }
+.reveal .s-none { color: var(--accent); }
+
+/* ---------- the line to say out loud ---------- */
+.reveal .kicker {
+  font-family: var(--mono); font-size: .62em; line-height: 1.6; color: var(--ink);
+  border-left: 2px solid var(--accent); padding-left: .9em; max-width: 52ch; margin-top: .3em;
+}
+.reveal .note { font-family: var(--mono); font-size: .55em; line-height: 1.6; color: var(--steel); max-width: 56ch; }
+
+/* ---------- columns ---------- */
+.reveal .cols { display: grid; gap: 1.6em; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); max-width: 100%; }
+.reveal .cols p, .reveal .cols ul { max-width: none; }
+.reveal .accent { color: var(--accent); }
+
+/* ---------- figures ---------- */
+.reveal .fig { width: 100%; max-width: 100%; margin: 0 0 .5em; }
+.reveal .fig svg { display: block; width: 100%; height: auto; }
+.reveal .fig-sm svg { max-height: 42vh; }
+.reveal .fig-lg svg { max-height: 56vh; }
+.reveal section.visual p { font-size: .8em; max-width: 40ch; }
+.reveal section.visual p.eyebrow { font-size: .58em; max-width: none; }
+.reveal section.visual p.note { font-size: .55em; }
+.reveal section.visual .kicker { font-size: .56em; }
+.reveal section.visual h2 { font-size: 1.35em; max-width: 26ch; }
+
+/* ---------- dense: a slide carrying a long list ---------- */
+.reveal section.dense { font-size: .82em; }
+.reveal section.dense ul { max-width: 44ch; }
+.reveal section.dense li { margin-bottom: .3em; line-height: 1.35; }
+.reveal section.dense h3 { margin-bottom: .7em; }
+.reveal section.dense .kicker { font-size: .58em; }
+
+/* ---------- chrome ---------- */
+.reveal .progress { color: var(--accent); height: 2px; }
+.reveal .controls { color: var(--steel); }
+.reveal .slide-number {
+  font-family: var(--mono); font-size: .62em; letter-spacing: .1em;
+  background: none; color: var(--steel-faint); top: 12px; right: 14px; bottom: auto; left: auto;
+}
+.reveal .backgrounds { background-color: transparent; }
+.reveal a:focus-visible, .reveal button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.reveal .scroll-x { overflow-x: auto; max-width: 100%; }
+
+@media (prefers-reduced-motion: reduce) { .reveal .slides section { transition: none !important; } }
+@media print {
+  .reveal-viewport { background: #fff !important; }
+  :root { --paper:#fff; --ink:#000; --ink-soft:#222; --rule:#bbb; }
+}

@@ -1,0 +1,16 @@
+# build output
+deck.html
+*.pdf
+.slides.rendered.md
+
+# macOS app build
+app/Presenter.app/
+app/.icon.png
+app/.AppIcon.iconset/
+
+# dependencies
+node_modules/
+package-lock.json
+
+# macOS
+.DS_Store

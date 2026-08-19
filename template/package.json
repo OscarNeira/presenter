@@ -1,0 +1,20 @@
+{
+  "name": "deck",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A self-contained reveal.js deck",
+  "author": "Oscar Neira",
+  "license": "MIT",
+  "scripts": {
+    "build": "./build.sh",
+    "check": "node check.js",
+    "present": "open deck.html"
+  },
+  "dependencies": {
+    "reveal.js": "^5.1.0"
+  },
+  "devDependencies": {
+    "mermaid": "^11.4.0",
+    "playwright": "^1.49.0"
+  }
+}
