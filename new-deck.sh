@@ -11,7 +11,7 @@ TITLE="${1:-}"
 [ -n "$TITLE" ] || { echo "usage: ./new-deck.sh \"Deck title\" [parent-dir]"; exit 1; }
 
 PARENT="${2:-$HOME/Documents/presentations}"
-SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]\+/-/g; s/^-//; s/-$//')
+SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')
 DIR="$PARENT/$(date +%Y-%m-%d)-$SLUG"
 
 [ -e "$DIR" ] && { echo "$DIR already exists"; exit 1; }
