@@ -26,6 +26,27 @@ struct Deck: Identifiable, Hashable {
         f.dateFormat = "d MMM yyyy"
         return f.string(from: modified)
     }
+
+    /// Same three groups as the mission-control dashboard's Decks tab (kept in
+    /// sync by convention, not a shared file): the daily/retro record Oscar
+    /// reads to himself each morning, vs. the decks built to stand in front of
+    /// other people. Inferred from the folder name, so nothing has to be
+    /// registered when a new deck lands.
+    var category: DeckCategory {
+        if folder == "daily-standup" { return .daily }
+        if folder.range(of: #"-retro-\d{4}-\d{2}-\d{2}-to-\d{4}-\d{2}-\d{2}$"#,
+                         options: .regularExpression) != nil {
+            return .sprint
+        }
+        return .presentation
+    }
+}
+
+enum DeckCategory: String, CaseIterable, Identifiable {
+    case daily = "Daily standups"
+    case sprint = "Sprints & retros"
+    case presentation = "Meetings & presentations"
+    var id: String { rawValue }
 }
 
 enum Library {
@@ -114,6 +135,16 @@ struct LibraryView: View {
     @Binding var decks: [Deck]
     let open: (Deck) -> Void
     let rescan: () -> Void
+    @State private var filter: DeckCategory? = nil   // nil = All
+
+    var filteredGroups: [(DeckCategory, [Deck])] {
+        let grouped = Dictionary(grouping: decks, by: \.category)
+        return DeckCategory.allCases.compactMap { cat in
+            guard filter == nil || filter == cat else { return nil }
+            guard let items = grouped[cat], !items.isEmpty else { return nil }
+            return (cat, items)
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -129,7 +160,28 @@ struct LibraryView: View {
                 Button(action: rescan) { Label("Refresh", systemImage: "arrow.clockwise") }
                     .keyboardShortcut("r", modifiers: .command)
             }
-            .padding(.horizontal, 24).padding(.top, 22).padding(.bottom, 16)
+            .padding(.horizontal, 24).padding(.top, 22).padding(.bottom, 12)
+
+            if !decks.isEmpty {
+                // The split Oscar asked for: the daily/sprint record on one
+                // side, the decks built to present to other people on the
+                // other — same grouping as the dashboard's Decks tab.
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        FilterPill(label: "All (\(decks.count))", selected: filter == nil) { filter = nil }
+                        ForEach(DeckCategory.allCases) { cat in
+                            let n = decks.filter { $0.category == cat }.count
+                            if n > 0 {
+                                FilterPill(label: "\(cat.rawValue) (\(n))", selected: filter == cat) {
+                                    filter = cat
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                }
+                .padding(.bottom, 12)
+            }
 
             Divider()
 
@@ -145,16 +197,41 @@ struct LibraryView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 0) {
-                        ForEach(decks) { deck in
-                            DeckRow(deck: deck) { open(deck) }
-                            Divider().padding(.leading, 24)
+                    LazyVStack(alignment: .leading, spacing: 0) {
+                        ForEach(filteredGroups, id: \.0) { cat, items in
+                            Text(cat.rawValue)
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 24).padding(.top, 14).padding(.bottom, 4)
+                            ForEach(items) { deck in
+                                DeckRow(deck: deck) { open(deck) }
+                                Divider().padding(.leading, 24)
+                            }
                         }
                     }
                 }
             }
         }
         .frame(minWidth: 620, minHeight: 420)
+    }
+}
+
+struct FilterPill: View {
+    let label: String
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(label)
+                .font(.system(size: 11, weight: .medium))
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .background(selected ? Color.accentColor.opacity(0.18) : Color.primary.opacity(0.06))
+                .foregroundStyle(selected ? Color.accentColor : Color.secondary)
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(selected ? Color.accentColor : .clear, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 }
 
