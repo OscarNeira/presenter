@@ -18,7 +18,7 @@ guard let swift = try? String(contentsOf: source, encoding: .utf8) else {
 }
 
 /// Every `#"…"#` raw-string literal on the lines of Deck.category, in order:
-/// the daily pattern first, then the sprint/retro one.
+/// the daily pattern first, then the sprint/retro one, then the outlook one.
 func patterns(in text: String) -> [String] {
     guard let body = text.range(of: "var category: DeckCategory {"),
           let end = text.range(of: "return .presentation", range: body.upperBound..<text.endIndex)
@@ -34,17 +34,18 @@ func patterns(in text: String) -> [String] {
 }
 
 let found = patterns(in: swift)
-guard found.count == 2 else {
-    FileHandle.standardError.write("expected 2 regexes in Deck.category, found \(found.count)\n".data(using: .utf8)!)
+guard found.count == 3 else {
+    FileHandle.standardError.write("expected 3 regexes in Deck.category, found \(found.count)\n".data(using: .utf8)!)
     exit(1)
 }
-let dailyPattern = found[0], sprintPattern = found[1]
+let dailyPattern = found[0], sprintPattern = found[1], outlookPattern = found[2]
 
 /// The same decision Deck.category makes, over the patterns it actually holds.
 func category(_ folder: String) -> String {
     if folder == "daily-standup" { return "daily" }
     if folder.range(of: dailyPattern, options: .regularExpression) != nil { return "daily" }
     if folder.range(of: sprintPattern, options: .regularExpression) != nil { return "sprint" }
+    if folder.range(of: outlookPattern, options: .regularExpression) != nil { return "sprint" }
     return "presentation"
 }
 
@@ -63,6 +64,15 @@ let cases: [(String, String)] = [
     ("2026-09-04-retro-2026-08-22-to-2026-09-04-v2-notes", "presentation"),
     ("2026-09-04-retro-2026-08-22-to-2026-09-04-final",    "presentation"),
     ("2026-09-04-retro-2026-08-22-to-2026-09",             "presentation"),
+    // The week-ahead deck (--outlook, 4 Sep 2026). It used to fall through to
+    // "Meetings & presentations", which is the group for decks with an
+    // audience; it is the forward half of the retro's own cadence.
+    ("2026-09-04-outlook-2026-09-07-to-2026-09-11",         "sprint"),
+    ("2026-09-11-outlook-2026-09-14-to-2026-09-18",         "sprint"),
+    // and its anchor is no looser than the retro one
+    ("2026-09-04-outlook-2026-09-07-to-2026-09-11-notes",   "presentation"),
+    ("2026-09-04-outlook-2026-09-07",                       "presentation"),
+    ("2026-09-04-outlook-planning",                         "presentation"),
 ]
 
 var failures = 0
