@@ -25,6 +25,8 @@ Three things this gives you that a normal reveal.js setup does not:
 - **A checker.** `npm run check` drives the built deck in a real browser and fails on the
   two things a source review never catches: a slide clipped by the frame, and an SVG whose
   content falls outside its own viewBox.
+- **A library you can search.** ⌘F searches deck titles, folder names *and the words on the
+  slides*, and shows you the line it matched on.
 
 ## Install
 
@@ -32,8 +34,13 @@ Three things this gives you that a normal reveal.js setup does not:
 git clone <this repo> ~/Documents/projects/presenter
 cd ~/Documents/projects/presenter/app
 ./build.sh
-cp -R Presenter.app /Applications/
+osascript -e 'tell application "Presenter" to quit'
+rm -rf ~/Applications/Presenter.app
+cp -R Presenter.app ~/Applications/
 ```
+
+`~/Applications`, not `/Applications` — that is the copy `open -a Presenter` resolves to on
+this machine. Install to the wrong one and the app you launch is not the app you built.
 
 Drag it to the Dock once. Requires macOS 13+ and Xcode command line tools.
 
@@ -111,30 +118,89 @@ Two rules for hand-written SVG, both learned the hard way:
 
 | Key | Does |
 |---|---|
-| `→` `←` | Next / previous |
-| **S** | Speaker view: notes, timer, next slide (a second window) |
-| **O** | Overview of all slides |
-| **B** | Black the screen, for discussion |
+| `→` `←` `space` | Next / previous |
+| **S** | Speaker view — a second window; see below |
+| **O** or `esc` | Overview of all slides |
+| **B** or `.` | Black the screen, for discussion |
+| **G** | Jump to a slide by number |
+| **?** | reveal.js's own full key list |
 | **⌃⌘F** | Full screen |
+| **⌘E** | Export this deck as a PDF |
 | **⌘[** | Back to the library |
 | **⌘R** | Reload after a rebuild |
+| **⌘/** | This list, inside the app |
+
+### The speaker window
+
+**S** opens it. It is part of the same single file — no server, no second copy of the deck —
+and it talks to the deck through `postMessage`, so it keeps working from a USB stick.
+
+| | |
+|---|---|
+| Notes | The current slide's `Note:` block, at a size you can read from a lectern |
+| Next up | The next slide's title *and its first lines*, so you know what you are walking into |
+| Talk timer | Runs from the moment the window opens. **T** pauses and resumes it; *Reset* zeroes it |
+| Slide timer | How long you have been on *this* slide — the number that tells you you are overrunning |
+| Clock | Wall clock, because the room has one and you should agree with it |
+| Remote | `→` `←` `space` `N` `P` drive the **deck** from this window |
+| All slides | **O** lists every slide; click one to jump the audience straight there, `esc` closes it |
+| **B** | Blacks the audience screen while you keep your notes |
 
 ## Export a PDF
 
+One slide per page, vector, no browser and no node:
+
 ```bash
-node tools/pdf.js path/to/deck.html out.pdf
+Presenter --export ~/Documents/presentations/2026-09-02-wave-2-kickoff
+Presenter --export <deck folder> ~/Desktop/out.pdf
 ```
 
-Or open `deck.html?print-pdf` in a browser and print, margins none, background graphics on.
+Or press **⌘E** while a deck is open and pick where it goes.
+
+The exporter loads the deck in reveal's own print view and captures each `.pdf-page` with
+WebKit, so what lands in the PDF is what the projector would have shown — including slides
+tall enough to spill onto a second page. It works on decks built by any version of
+`build.sh`; nothing has to be rebuilt.
+
+`tools/pdf.js` did this with playwright and is kept only for scripting from node. `--export`
+is the one to use.
+
+## From the command line
+
+The app is also a CLI, so a deck is scriptable from a Makefile or a cron job:
+
+```bash
+Presenter --find "sbom"                       # search every deck, print the matching lines
+Presenter --export <deck folder> [out.pdf]    # one slide per page
+Presenter --duplicate <deck folder> "New title"   # today's date, same slides, new folder
+```
+
+`Presenter` here is `~/Applications/Presenter.app/Contents/MacOS/Presenter`; symlink it onto
+your `PATH` if you use it often.
 
 ## Layout
 
 ```
 app/          the macOS launcher (Swift + WebKit, no Electron)
 template/     what new-deck.sh copies: slides.md, theme.css, build.sh, check.js
+tools/        propagate-template.sh (push template/build.sh to every deck), pdf.js (legacy)
 docs/         conventions and notes
 new-deck.sh   scaffold a deck into ~/Documents/presentations
 ```
+
+### When the template changes
+
+Every deck owns a copy of `build.sh` — that is what makes a deck folder survive without this
+repo. The copies differ from `template/build.sh` in exactly one line, the `<title>`, so they
+can be brought forward mechanically:
+
+```bash
+./tools/propagate-template.sh --dry-run   # what it would touch
+./tools/propagate-template.sh             # copy, keep each title, rebuild, report the diff
+```
+
+It only enters folders that hold both `slides.md` and `build.sh`, it never reads or writes
+`slides.md`, and it keeps `deck.html.bak` next to each rebuild until you delete them.
 
 ## Theming
 
