@@ -27,6 +27,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>LSMinimumSystemVersion</key>    <string>13.0</string>
   <key>NSHighResolutionCapable</key>   <true/>
   <key>NSPrincipalClass</key>          <string>NSApplication</string>
+  <key>NSDocumentsFolderUsageDescription</key>
+  <string>Presenter lists the decks in ~/Documents/presentations.</string>
 </dict>
 </plist>
 PLIST
@@ -34,7 +36,7 @@ PLIST
 echo "compiling…"
 swiftc -O -parse-as-library \
   -target arm64-apple-macosx13.0 \
-  -framework SwiftUI -framework WebKit -framework AppKit \
+  -framework SwiftUI -framework WebKit -framework AppKit -framework PDFKit \
   -o "$BIN" Presenter.swift
 
 # a simple blue icon so it is findable in the Dock
@@ -82,4 +84,7 @@ echo "Built $(pwd)/$APP"
 echo
 echo "Open it:            open '$(pwd)/$APP'"
 echo "Keep it in the Dock: drag it there once, then it is one click forever."
-echo "Install to /Applications:  cp -R '$APP' /Applications/"
+# ~/Applications, not /Applications: that is the copy `open -a Presenter` finds
+# on this machine, and installing to the other one means the running app is not
+# the one you just built.
+echo "Install:            osascript -e 'tell application \"Presenter\" to quit'; rm -rf ~/Applications/Presenter.app; cp -R '$APP' ~/Applications/"
