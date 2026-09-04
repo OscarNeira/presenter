@@ -37,10 +37,10 @@ struct Deck: Identifiable, Hashable {
     }
 
     /// Same three groups as the mission-control dashboard's Decks tab (kept in
-    /// sync by convention, not a shared file): the daily/retro record Oscar
-    /// reads to himself each morning, vs. the decks built to stand in front of
-    /// other people. Inferred from the folder name, so nothing has to be
-    /// registered when a new deck lands.
+    /// sync by convention, not a shared file): the daily/retro/outlook record
+    /// Oscar reads to himself each morning, vs. the decks built to stand in
+    /// front of other people. Inferred from the folder name, so nothing has to
+    /// be registered when a new deck lands.
     var category: DeckCategory {
         // Legacy: the single static "daily-standup" folder that used to be
         // overwritten every day (fixed 3 Sep 2026 — each day now gets its own
@@ -55,6 +55,15 @@ struct Deck: Identifiable, Hashable {
         // --retro-v2). Anchoring at the range alone dropped every redone retro
         // into "Meetings & presentations" — fixed 4 Sep 2026.
         if folder.range(of: #"-retro-\d{4}-\d{2}-\d{2}-to-\d{4}-\d{2}-\d{2}(-v\d+)?$"#,
+                         options: .regularExpression) != nil {
+            return .sprint
+        }
+        // The week-ahead deck (build-standup-deck.py --outlook, added 4 Sep
+        // 2026): "<built>-outlook-<from>-to-<to>". It is the forward half of
+        // the cadence the retro is the backward half of, so it lands in the
+        // same group rather than among the decks built for an audience.
+        // brain/server.py's _deck_category() carries this pattern too.
+        if folder.range(of: #"-outlook-\d{4}-\d{2}-\d{2}-to-\d{4}-\d{2}-\d{2}$"#,
                          options: .regularExpression) != nil {
             return .sprint
         }
@@ -91,7 +100,7 @@ struct Deck: Identifiable, Hashable {
 
 enum DeckCategory: String, CaseIterable, Identifiable {
     case daily = "Daily standups"
-    case sprint = "Sprints & retros"
+    case sprint = "Sprint retros & outlooks"
     case presentation = "Meetings & presentations"
     var id: String { rawValue }
 }
