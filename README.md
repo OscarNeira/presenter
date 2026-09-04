@@ -188,6 +188,17 @@ docs/         conventions and notes
 new-deck.sh   scaffold a deck into ~/Documents/presentations
 ```
 
+### Checking the library rules
+
+The app sorts decks into its three groups from the folder name alone, so a naming convention
+that changes silently re-files old decks. There is no test target — one Swift file, compiled
+by `swiftc` — so the check lifts the regexes back out of `Presenter.swift` and runs a table of
+folder names past them:
+
+```bash
+swift app/category-check.swift
+```
+
 ### When the template changes
 
 Every deck owns a copy of `build.sh` — that is what makes a deck folder survive without this

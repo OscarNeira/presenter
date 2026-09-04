@@ -50,7 +50,11 @@ struct Deck: Identifiable, Hashable {
                          options: .regularExpression) != nil {
             return .daily
         }
-        if folder.range(of: #"-retro-\d{4}-\d{2}-\d{2}-to-\d{4}-\d{2}-\d{2}$"#,
+        // The trailing -vN is optional: a retro that gets redone keeps the same
+        // range in its folder name and adds "-v2", "-v3"… (build-standup-deck.py
+        // --retro-v2). Anchoring at the range alone dropped every redone retro
+        // into "Meetings & presentations" — fixed 4 Sep 2026.
+        if folder.range(of: #"-retro-\d{4}-\d{2}-\d{2}-to-\d{4}-\d{2}-\d{2}(-v\d+)?$"#,
                          options: .regularExpression) != nil {
             return .sprint
         }
